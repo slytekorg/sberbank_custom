@@ -8,7 +8,13 @@ class SberbankHandler
         'SBERBANK_PROD_URL' => '',
         'SBERBANK_TEST_URL' => '',
         'MODULE_VERSION' => '',
-        'ISO' => '',
+        'ISO' => array(
+            'USD' => 840,
+            'EUR' => 978,
+            'RUB' => 643,
+            'RUR' => 643,
+            'BYN' => 933
+        ),
         'CMS_VERSION' => '',
         'TAX_DEFAULT' => '',
         'IGNORE_PRODUCT_TAX' => '',
