@@ -45,6 +45,13 @@ class Gateway
         'module_version' => 'def',
         'language' => 'ru',
         'ofd_tax' => 0,
+        'iso'=>array(
+            'USD' => 840,
+            'EUR' => 978,
+            'RUB' => 643,
+            'RUR' => 643,
+            'BYN' => 933
+        ),
         'handler_two_stage' => 0,
         'default_cartItem_tax' => 6,
         'delivery' => false,
