@@ -3,12 +3,6 @@
 class SberbankHandler
 {
 
-    const OPTIONS = [
-        'TAX_DEFAULT' => 6,  // тип НДС [ 0='>Без НДС', 1=>'НДС по ставке 0%', 2=>'НДС чека по ставке 10%', 4=>'НДС чека по ставке 10/110', 6=>'НДС чека по ставке 20%', 7=>'НДС чека по ставке 20/120']
-        'TEST_MODE' => true, //тестовая среда
-        'LOGGING' => false, //вести логи
-    ];
-
     protected $params = [];
 
     public function __construct($params)
@@ -24,9 +18,9 @@ class SberbankHandler
         // module settings
         $RBS_Gateway->setOptions(array(
             'language' => 'ru',
-            'default_cartItem_tax' => self::OPTIONS['TAX_DEFAULT'],
-            'test_mode' => self::OPTIONS['TEST_MODE'],
-            'handler_logging' => self::OPTIONS['LOGGING']
+            'default_cartItem_tax' => $this->params['TAX_DEFAULT'],
+            'test_mode' => $this->params['TEST_MODE'],
+            'handler_logging' => $this->params['LOGGING']
         ));
 
 
@@ -81,7 +75,7 @@ class SberbankHandler
         $RBS_Gateway = new \Sberbank\Payments\Gateway;
         $RBS_Gateway->setOptions(array(
             // module settings
-            'test_mode' => self::OPTIONS['TEST_MODE'],
+            'test_mode' => $this->params['TEST_MODE'],
             'callback_redirect' => $_REQUEST['CALLBACK_REDIRECT']=='1'
         ));
 
