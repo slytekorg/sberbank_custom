@@ -38,8 +38,9 @@ class Gateway
     private $data = array();
 
     private $options = array(
-        'gate_url_prod' => '',
-        'gate_url_test' => '',
+        'cms_version'=> 'custom',
+        'gate_url_prod' => 'https://securepayments.sberbank.ru/payment/rest/',
+        'gate_url_test' => 'https://3dsec.sberbank.ru/payment/rest/',
         'payment_link' => '',
         'ofd_enabled' => false,
         'module_version' => 'def',
