@@ -4,31 +4,9 @@ class SberbankHandler
 {
 
     const OPTIONS = [
-        'MODULE_ID' => '',
-        'SBERBANK_PROD_URL' => '',
-        'SBERBANK_TEST_URL' => '',
-        'MODULE_VERSION' => '',
-        'ISO' => array(
-            'USD' => 840,
-            'EUR' => 978,
-            'RUB' => 643,
-            'RUR' => 643,
-            'BYN' => 933
-        ),
-        'CMS_VERSION' => '',
-        'TAX_DEFAULT' => '',
-        'IGNORE_PRODUCT_TAX' => '',
-        'RBS_ENABLE_CALLBACK' => '',
-        'SBERBANK_OFD_TAX_SYSTEM' => '',
-        'SBERBANK_OFD_RECIEPT' => '',
-        'SBERBANK_FFD_VERSION' => '',
-        'SBERBANK_FFD_PAYMENT_OBJECT' => '',
-        'SBERBANK_FFD_PAYMENT_OBJECT_DELIVERY' => '',
-        'SBERBANK_FFD_PAYMENT_METHOD' => '',
-        'SBERBANK_FFD_PAYMENT_METHOD_DELIVERY' => '',
-        'SBERBANK_GATE_TEST_MODE' => '',
-        'SBERBANK_HANDLER_TWO_STAGE' => '',
-        'SBERBANK_HANDLER_LOGGING' => '',
+        'TAX_DEFAULT' => 6,  // тип НДС [ 0='>Без НДС', 1=>'НДС по ставке 0%', 2=>'НДС чека по ставке 10%', 4=>'НДС чека по ставке 10/110', 6=>'НДС чека по ставке 20%', 7=>'НДС чека по ставке 20/120']
+        'TEST_MODE' => true, //тестовая среда
+        'LOGGING' => false, //вести логи
     ];
 
     protected $params = [];
@@ -45,53 +23,18 @@ class SberbankHandler
 
         // module settings
         $RBS_Gateway->setOptions(array(
-            'module_id' => self::OPTIONS['MODULE_ID'],
-            'gate_url_prod' => self::OPTIONS['SBERBANK_PROD_URL'],
-            'gate_url_test' => self::OPTIONS['SBERBANK_TEST_URL'],
-            'module_version' => self::OPTIONS['MODULE_VERSION'],
-            'iso' => self::OPTIONS['ISO'],
-            'cms_version' => self::OPTIONS['CMS_VERSION'],
             'language' => 'ru',
             'default_cartItem_tax' => self::OPTIONS['TAX_DEFAULT'],
-            'ignore_product_tax' => self::OPTIONS['IGNORE_PRODUCT_TAX'],
-            'callback_mode' => self::OPTIONS['RBS_ENABLE_CALLBACK'],
-            'test_mode' => self::OPTIONS['SBERBANK_GATE_TEST_MODE'],
-            'handler_two_stage' => self::OPTIONS['SBERBANK_HANDLER_TWO_STAGE'],
-            'handler_logging' => self::OPTIONS['SBERBANK_HANDLER_LOGGING']
-
-            // 'ofd_tax' => self::OPTIONS['SBERBANK_OFD_TAX_SYSTEM'],
-            // 'ofd_enabled' => self::OPTIONS['SBERBANK_OFD_RECIEPT'],
-            // 'ffd_version' => self::OPTIONS['SBERBANK_FFD_VERSION'],
-            // 'ffd_payment_object' => self::OPTIONS['SBERBANK_FFD_PAYMENT_OBJECT'],
-            // 'ffd_payment_object_delivery' => self::OPTIONS['SBERBANK_FFD_PAYMENT_OBJECT_DELIVERY'],
-            // 'ffd_payment_method' => self::OPTIONS['SBERBANK_FFD_PAYMENT_METHOD'],
-            // 'ffd_payment_method_delivery' => self::OPTIONS['SBERBANK_FFD_PAYMENT_METHOD_DELIVERY'],
-
-            // 'additionalOfdParams' => array(
-            // 'agent_info.type' => 6,
-            // 'agent_info.paying.operation' => '',
-            // 'agent_info.paying.phones' => '',
-            // 'agent_info.paymentsOperator.phones' => '',
-            // 'agent_info.MTOperator.address' => '',
-            // 'agent_info.MTOperator.inn' => '',
-            // 'agent_info.MTOperator.name' => '',
-            // 'agent_info.MTOperator.phones' => '',
-            // 'supplier_info.inn' => '',
-            // 'supplier_info.name' => '',
-            // 'supplier_info.phones' => '',
-            // 'cashier' => '',
-            // 'additional_check_props' => '',
-            // 'additional_user_props.name' => '',
-            // 'additional_user_props.value' => '',
-            // ),
+            'test_mode' => self::OPTIONS['TEST_MODE'],
+            'handler_logging' => self::OPTIONS['LOGGING']
         ));
 
 
         $RBS_Gateway->buildData(array(
             'orderNumber' => $this->params['ORDER_NUMBER'],
             'amount' => $this->params['ORDER_AMOUNT'],
-            'userName' => $this->params['SBERBANK_GATE_LOGIN'],
-            'password' => $this->params['SBERBANK_GATE_PASSWORD'],
+            'userName' => $this->params['LOGIN'],
+            'password' => $this->params['PASSWORD'],
             'description' => $this->params['ORDER_DESCRIPTION']
         ));
 
@@ -138,16 +81,14 @@ class SberbankHandler
         $RBS_Gateway = new \Sberbank\Payments\Gateway;
         $RBS_Gateway->setOptions(array(
             // module settings
-            'gate_url_prod' => self::OPTIONS['SBERBANK_PROD_URL'],
-            'gate_url_test' => self::OPTIONS['SBERBANK_TEST_URL'],
-            'test_mode' => self::OPTIONS['SBERBANK_GATE_TEST_MODE'],
-            'callback_redirect' => self::OPTIONS['CALLBACK_REDIRECT']
+            'test_mode' => self::OPTIONS['TEST_MODE'],
+            'callback_redirect' => $_REQUEST['CALLBACK_REDIRECT']=='1'
         ));
 
         $RBS_Gateway->buildData(array(
-            'userName' => self::OPTIONS['SBERBANK_GATE_LOGIN'],
-            'password' => self::OPTIONS['SBERBANK_GATE_PASSWORD'],
-            'orderId' => $_REQUEST['orderId'],
+            'userName' => $this->params['LOGIN'],
+            'password' => $this->params['PASSWORD'],
+            'orderId' => $_REQUEST['CALLBACK_REDIRECT'] == 1 ? $_REQUEST['mdOrder'] : $_REQUEST['orderId']
         ));
 
         $gateResponse = $RBS_Gateway->checkOrder();
@@ -156,7 +97,7 @@ class SberbankHandler
 
         $successPayment = true;
 
-        if ($resultId != $this->params['SBERBANK_ORDER_NUMBER'])
+        if ($resultId != $this->params['ORDER_NUMBER'])
         {
             $resultId = false;
         }
