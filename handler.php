@@ -25,13 +25,12 @@ class SberbankHandler
 
 
         $RBS_Gateway->buildData(array(
-            'orderNumber' => $this->params['ORDER_NUMBER'],
+            'orderNumber' => $this->params['ORDER_ID'],
             'amount' => $this->params['ORDER_AMOUNT'],
             'userName' => $this->params['LOGIN'],
             'password' => $this->params['PASSWORD'],
             'description' => $this->params['ORDER_DESCRIPTION']
         ));
-
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== "off" ? 'https://' : 'http://';
         $domain_name = strtok($_SERVER['HTTP_HOST'], ":");
 
@@ -40,18 +39,29 @@ class SberbankHandler
             $domain_name = $_SERVER['SERVER_NAME'];
         }
 
-        if (strlen($domain_name) > 3)
+        if (!$this->params['NOTIFY_URL'])
+        {
+
+            $this->params['NOTIFY_URL'] = $protocol . $domain_name . str_ireplace($_SERVER['DOCUMENT_ROOT'], '', __FILE__);
+        }
+        if (!$this->params['RETURN_URL'])
+        {
+
+            $this->params['RETURN_URL'] = $protocol . $domain_name . str_ireplace($_SERVER['DOCUMENT_ROOT'], '', __FILE__);
+        }
+
+        if (strlen($this->params['NOTIFY_URL']) > 3)
         {
             $RBS_Gateway->setOptions(
                 array(
                     'domain_finded' => true,
-                    'callback_url' => html_entity_decode($protocol . $domain_name . '/sberbank_result.php')
+                    'callback_url' => html_entity_decode($this->params['NOTIFY_URL'])
                 )
             );
         }
 
         $RBS_Gateway->buildData(array(
-            'returnUrl' => $protocol . $domain_name . '/sberbank_result.php' . '?ORDER_ID=' . $this->params['ORDER_ID']
+            'returnUrl' => $this->params['RETURN_URL'] . '?ORDER_ID=' . $this->params['ORDER_ID']
         ));
 
         $RBS_Gateway->setOptions(array(
@@ -76,7 +86,7 @@ class SberbankHandler
         $RBS_Gateway->setOptions(array(
             // module settings
             'test_mode' => $this->params['TEST_MODE'],
-            'callback_redirect' => $_REQUEST['CALLBACK_REDIRECT']=='1'
+            'callback_redirect' => $_REQUEST['CALLBACK_REDIRECT'] == '1'
         ));
 
         $RBS_Gateway->buildData(array(
@@ -87,20 +97,13 @@ class SberbankHandler
 
         $gateResponse = $RBS_Gateway->checkOrder();
 
-        $resultId = $gateResponse['orderNumber'];
-
-        $successPayment = true;
-
-        if ($resultId != $this->params['ORDER_NUMBER'])
-        {
-            $resultId = false;
-        }
+        $gateResponse['success'] = true;
 
         if ($gateResponse['errorCode'] != 0 || ($gateResponse['orderStatus'] != 1 && $gateResponse['orderStatus'] != 2))
         {
-            $resultId = false;
+            $gateResponse['success'] = false;
         }
 
-        return $resultId;
+        return $gateResponse;
     }
 }
